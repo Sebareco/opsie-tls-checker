@@ -6,6 +6,13 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "scripts": {
+  "install:all": "bun install && cd frontend && bun install",
+  "dev:server": "bun --watch server.ts",
+  "dev:ui": "cd frontend && bun dev",
+  "build:ui": "cd frontend && bun run build",
+  "start": "bun server.ts"
+},
   "peerDependencies": {
     "typescript": "^5"
   }
