@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { requestFormReset } from 'react-dom';
+import { resumeToPipeableStream } from 'react-dom/server';
 
 /**
  * Explicación de Hooks:
@@ -6,66 +8,133 @@ import { useState } from 'react';
  * - onSubmit: Manejamos el envío para controlar el flujo de datos.
  */
 function App() {
-  const [url, setUrl] = useState(''); // Guarda lo que el usuario escribe.
-  const [result, setResult] = useState<{ url: string; version: string } | null>(null); // Guarda la respuesta del servidor.
-  const [loading, setLoading] = useState(false); // Estado visual de "cargando".
+  type Site = { name: string; url: string };
+  type TLSResult = { name: string; url: string; version?: string; error?: string };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    // e.preventDefault(): Crucial. Evita que el navegador recargue la página (comportamiento por defecto de los forms).
-    e.preventDefault();
+  const [sites, setSites] = useState<Site[]>([]);
+  const [results, setResults] = useState<TLSResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+
+  const getSeverity = (result: TLSResult): 'good' | 'warning' | 'bad' | 'unknown' => {
+
+    if(result.error) return 'bad';
+
+    if (!result.version) return 'unknown';
+
+    const v = result.version.toLocaleLowerCase();
+
+    if(v.includes('1.3')) return 'good';
+
+    if(v.includes('1.2')) return 'warning';
+
+    if (
+      v.includes('1.1') ||
+      v.includes('1.0') ||
+      v.includes('ssl') ||
+      v.includes('2.0') ||
+      v.includes('3.0')
+    ){ return 'bad'; }
+
+    return 'unknown';
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSites = async () => {
+      setErrorMessage(null);
+      try {
+        const response = await fetch('/api/sites');
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error ?? 'Error cargando sites');
+        }
+        if (!cancelled) setSites(data as Site[]);
+      } catch (err) {
+        if (!cancelled) setErrorMessage(String(err));
+      }
+    };
+
+    void loadSites();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleAnalyzeAll = async () => {
     setLoading(true);
-    setResult(null);
+    setResults([]);
+    setErrorMessage(null);
 
     try {
-      // fetch('/api/...'): Enviamos los datos al servidor de Bun.
-      const response = await fetch('/api/check-tls', {
+      const response = await fetch('/api/check-tls-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }), // Convertimos el objeto JS a un string JSON.
+        body: JSON.stringify({}),
       });
 
       const data = await response.json();
 
-      if (data.error) {
-        alert(data.error);
-      } else {
-        setResult(data); // Actualizamos el estado para mostrar el mensaje abajo.
-      }
+      if (!response.ok) throw new Error(data?.error ?? 'Error analizando');
+      setResults(data as TLSResult[]);
     } catch (err) {
-      alert("No se pudo conectar con el servidor.");
+      setErrorMessage(String(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '40px', maxWidth: '600px', margin: '0 auto', fontFamily: 'system-ui' }}>
-      <h1>Analizador de Seguridad TLS</h1>
+    <div className="app-container">
+      <h1 className="app-title">Analizador de Seguridad TLS</h1>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px' }}>
-        <input
-          type="text"
-          placeholder="Ej: google.com"
-          required
-          value={url}
-          onChange={(e) => setUrl(e.target.value)} // Vinculamos el input con el estado 'url'.
-          style={{ flex: 1, padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}
+      <div className="controls-row">
+        <button
+          type="button"
+          disabled={loading || sites.length === 0}
+          onClick={handleAnalyzeAll}
+          className="primary-button"
         >
-          {loading ? 'Consultando...' : 'Analizar'}
+          {loading ? 'Analizando...' : `Analizar todo (${sites.length})`}
         </button>
-      </form>
+        <span className="sites-status">
+          {sites.length > 0 ? 'Lista cargada desde el servidor.' : 'Cargando lista...'}
+        </span>
+      </div>
 
-      {/* Renderizado condicional: Solo se muestra si hay un resultado */}
-      {result && (
-        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f4f4f4', borderRadius: '8px' }}>
-          <p style={{margin: 0 ,color: 'black'}}>
-          TLS version of <strong >{result.url}</strong> is <strong >{result.version}</strong>
-          </p>
+      {errorMessage && (
+        <div className="alert-warning">
+          {errorMessage}
+        </div>
+      )}
+
+      {results.length > 0 && (
+        <div className="results-card">
+          <div className="results-title">Resultados</div>
+          <table className="results-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>URL</th>
+                <th>TLS / Error</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((r) => (
+                <tr key={`${r.name}-${r.url}`}>
+                  <td>{r.name}</td>
+                  <td>{r.url}</td>
+                  <td>
+                    <span className={`tls-badge tls-badge--${getSeverity(r)}`}>
+                      {r.error ? r.error : r.version ?? 'Unknown'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
