@@ -22,36 +22,128 @@ a:hover {
   color: #535bf2;
 }
 
+:root,
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.app-container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-button {
+.app-title {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  margin: 0 0 24px;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.primary-button {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+  padding: 10px 20px;
+  font-size: 1rem;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #007bff;
+  color: #ffffff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.05s ease;
 }
-button:hover {
-  border-color: #646cff;
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+.primary-button:hover:not(:disabled) {
+  background-color: #0062cc;
+}
+
+.primary-button:focus-visible {
+  outline: 3px solid #80bdff;
+  outline-offset: 2px;
+}
+
+.sites-status {
+  color: #333333;
+}
+
+.alert-warning {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #fff3cd;
+  border-radius: 8px;
+  color: #664d03;
+}
+
+.results-card {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+}
+
+.results-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #111111;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th,
+.results-table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #dddddd;
+  color: #111111;
+}
+
+
+.tls-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Verde: TLSv1.3 ("TLS 3.0") */
+.tls-badge--good {
+  background-color: #d1fae5; 
+  color: #065f46;          
+}
+
+/* Amarillo: TLSv1.2 ("TLS 2.0") */
+.tls-badge--warning {
+  background-color: #fef3c7; 
+  color: #92400e;           
+}
+
+/* Rojo: TLS <=1.1, SSLv3, SSLv2, errores */
+.tls-badge--bad {
+  background-color: #fee2e2; 
+  color: #991b1b;            
+}
+
+/* Gris: desconocido o formato raro */
+.tls-badge--unknown {
+  background-color: #e5e7eb; 
+  color: #111827;            
 }
 
 @media (prefers-color-scheme: light) {
