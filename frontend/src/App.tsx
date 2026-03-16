@@ -22,16 +22,14 @@ function App() {
 
     const v = result.version.toLocaleLowerCase();
 
-    if(v.includes('1.2')) return 'bg-yellow-100 text-yellow-700';
+    if(v === "tlsv1.2") return 'bg-yellow-100 text-yellow-700';
 
-    if(v.includes('1.3')) return 'bg-green-100 text-green-700';
+    if(v === "tlsv1.3") return 'bg-green-100 text-green-700';
 
     if (
-      v.includes('1.1') ||
-      v.includes('1.0') ||
-      v.includes('ssl') ||
-      v.includes('2.0') ||
-      v.includes('3.0')
+      v === "sslv3" ||
+       v === "tlsv1" ||
+        v === "tlsv1.1"
     ){ return 'bg-red-100 text-red-700'; }
 
     return 'bg-grey-100 text-grey-700';
