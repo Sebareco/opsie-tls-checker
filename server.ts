@@ -21,6 +21,7 @@ async function getTLSVersion(hostname: string): Promise<string> {
       // 3. socket.getProtocol(): Una vez conectados, extraemos la versión negociada.
       const protocol = socket.getProtocol();
       resolve(protocol || "Unknown");
+      console.log(protocol);
       socket.destroy(); // Cerramos la conexión para no dejar sockets abiertos.
     });
 
