@@ -1,35 +1,27 @@
+import { execSync } from "child_process";
+import { Socket } from "node:dgram";
+import { resourceUsage } from "node:process";
 import tls from "node:tls";
 
 
-async function getTLSVersion(hostname: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-   
-    const cleanHost = hostname.replace(/^(https?:\/\/)/, "").split('/')[0];
+async function auditVersionTLS(host: string, version: string): Promise<boolean> {
+  try {
+    const flag = version === "SSLv3" ? "-ssl3" : 
+                 version === "TLSv1" ? "-tls1" : 
+                 version === "TLSv1.1" ? "-tls1_1" : 
+                 version === "TLSv1.2" ? "-tls1_2" : "-tls1_3";
 
+    const comando = `echo | openssl s_client -connect ${host}:443 ${flag} -servername ${host} 2>&1`;
+    const output = execSync(comando, { encoding: 'utf-8', timeout: 5000 });
+    const match = output.match(/Protocol\s*:\s*(.+)/);
+    const protocoloReal = match ? match[1].trim() : "Desconocido";
+
+    console.log(`[AUDIT] Pedido: ${version} | Real: ${protocoloReal}`);
     
-    const socket = tls.connect({
-      host: cleanHost,
-      port: 443,
-      servername: cleanHost,
-      timeout: 5000,
-    }, () => {
-      
-      const protocol = socket.getProtocol();
-      resolve(protocol || "Unknown");
-      socket.destroy(); 
-    });
-
-    
-    socket.on("error", (err) => {
-      reject(`Error de conexión: ${err.message}`);
-      socket.destroy();
-    });
-
-    socket.setTimeout(5000, () => {
-      reject("Timeout: El servidor no respondió a tiempo");
-      socket.destroy();
-    });
-  });
+    return protocoloReal === version || (version === "TLSv1.3" && protocoloReal === "TLSv1.3");
+  } catch (e) {
+    return false;
+  }
 }
 
 
@@ -38,51 +30,22 @@ const server = Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
 
-    if (url.pathname === "/api/sites" && req.method === "GET") {
-      try {
-        const sitesFile = Bun.file("./data/sites.json");
-        const sites = JSON.parse(await sitesFile.text());
-        return Response.json(sites);
-      } catch (error) {
-        return Response.json({ error: String(error) }, { status: 500 });
+    if (req.method === "POST" && url.pathname === "/api/version-tls-all") {
+      const { url: targetUrl } = await req.json();
+      const hostLimpio = targetUrl.replace(/^(https?:\/\/)/, "").split('/')[0];
+      
+      const versions = ["SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"];
+      const results = [];
+
+      for (const v of versions) {
+        console.log(`--- Iniciando auditoría: ${v} ---`);
+        const isSupported = await auditVersionTLS(hostLimpio, v);
+        results.push({ version: v, supported: isSupported });
       }
+      
+      return Response.json(results);
     }
 
-    if (url.pathname === "/api/check-tls" && req.method === "POST") {
-      try {
-        const body = (await req.json()) as { url: string };
-        const version = await getTLSVersion(body.url);
-        return Response.json({ url: body.url, version });
-      } catch (error) {
-        return Response.json({ error: String(error) }, { status: 500 });
-      }
-    }
-
-    if (url.pathname === "/api/check-tls-batch" && req.method === "POST") {
-      try {
-        const sitesFile = Bun.file("./data/sites.json");
-        const sites: { name: string; url: string }[] = JSON.parse(
-          await sitesFile.text()
-        );
-
-        const results = await Promise.all(
-          sites.map(async (site) => {
-            try {
-              const version = await getTLSVersion(site.url);
-              return { ...site, version };
-            } catch (error) {
-              return { ...site, error: String(error) };
-            }
-          })
-        );
-
-        return Response.json(results);
-      } catch (error) {
-        return Response.json({ error: String(error) }, { status: 500 });
-      }
-    }
-
-    
     const filePath = "./frontend/dist" + (url.pathname === "/" ? "/index.html" : url.pathname);
     const file = Bun.file(filePath);
 
