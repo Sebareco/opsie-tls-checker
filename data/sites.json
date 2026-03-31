@@ -1,0 +1,11 @@
+[
+  { "name": "Google", "url": "google.com" },
+  { "name": "GitHub", "url": "github.com" },
+  { "name": "Cloudflare", "url": "cloudflare.com" },
+  { "name": "Mozilla", "url": "mozilla.org" },
+  { "name": "Wikipedia", "url": "wikipedia.org" },
+  { "name": "malboro", "url": "marlboromusic.org"},
+  { "name": "dinkum", "url": "dinkuminteractive.com"},
+  { "name": "api", "url": "api.sw.com.mx"}
+  
+]
