@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, version } from 'react';
+import { getSourceMapRange } from 'typescript';
 
 
 type ProtocolDetail = { 
@@ -56,6 +57,9 @@ function App() {
   
       const data = await response.json();
 
+      const date = new Date();
+      const dateLocal = date.toLocaleString();
+
       const hasConnection = data.some((d: ProtocolDetail) => d.supported);
       if (!hasConnection) {
         
@@ -65,7 +69,12 @@ function App() {
 
       setResults(prev => {
         const index = prev.findIndex(r => r.url === url);
-        const nuevo = { url, details: data, loading: false };
+        const nuevo = { 
+          url, 
+          details: data,
+          scannedAt: dateLocal,
+          loading: false };
+
         
         if (index !== -1) {
           const copia = [...prev];
@@ -116,6 +125,20 @@ function App() {
     setSingleUrl('');
   };
 
+
+  const getRecommendation = (version) => {
+    if (version.includes('1.0') || version.includes('1.1') || version.includes('SSL')) {
+      return "❌ CRÍTICO: Protocolo obsoleto y vulnerable. Desactivar inmediatamente para cumplir estándares de seguridad.";
+    }
+    if (version.includes('1.2')) {
+      return "⚠️ ADVERTENCIA: TLS 1.2 sigue siendo seguro pero está entrando en fase de depreción. Se recomienda migrar a 1.3.";
+    }
+    if (version.includes('1.3')) {
+      return "✅ ÓPTIMO: Estás usando la versión más moderna y segura disponible.";
+    }
+    return "Estado desconocido";
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -146,34 +169,77 @@ function App() {
             <thead className="bg-slate-700 text-[10px] uppercase tracking-widest">
               <tr>
                 <th className="p-4">URL</th>
-                <th className="p-4 text-center">Estado</th>
+                <th className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    ESTADO
+                  </div>
+                </th>
                 <th className="p-4 text-right">Detalle</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700 text-sm">
-              {results.map((res, idx) => (
+            {results.map((res, idx) => (
                 <div key={idx} className="contents">
                   <tr 
                     onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
                     className="hover:bg-slate-700/50 cursor-pointer transition-colors"
                   >
-                    <td className="p-4 font-mono">{res.url}</td>
+                    <td className="p-4">
+                      <div className="font-mono">{res.url}</div>
+                      <div className="text-[10px] text-slate-500 italic">Visto: {res.scannedAt}</div>
+                    </td>
+                    
                     <td className="p-4 text-center">
                       {res.loading ? (
                         <span className="text-slate-500 animate-pulse italic text-xs font-bold">Escaneando...</span>
                       ) : (
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          res.details.some(d => d.supported && d.version.includes('SSL')) 
+                          res.details.some(d => d.supported && !/TLSv1\.(2|3)/.test(d.version)) 
                           ? 'bg-red-500/20 text-red-400' 
                           : 'bg-emerald-500/20 text-emerald-400'
                         }`}>
-                          {res.details.some(d => d.supported && d.version.includes('SSL')) ? '⚠️ VULNERABLE' : '✅ SEGURO'}
+                          {res.details.some(d => d.supported && !/TLSv1\.(2|3)/.test(d.version)) ? '⚠️ VULNERABLE' : '✅ SEGURO'}
                         </span>
                       )}
                     </td>
-                    <td className="p-4 text-right text-slate-500 italic text-xs">
-                      {expandedIndex === idx ? 'Ocultar' : 'Ver LEDs'}
-                    </td>
+                    
+                    <td className="p-4">
+                      <div className="flex flex-col items-end gap-2 min-w-[120px]">
+                        
+                        
+                        <button 
+                          onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+                          className="text-[10px] text-slate-500 hover:text-purple-400 flex items-center gap-1 transition-colors mb-1"
+                        >
+                          {expandedIndex === idx ? 'Ocultar' : 'Detalles'} 
+                          <span className="text-[8px]">{expandedIndex === idx ? '▲' : '▼'}</span>
+                        </button>
+
+                        {!res.loading && (
+                          <div className="flex flex-col gap-1 w-full items-end">
+                            {res.details.filter(d => d.supported).map(d => (
+                              <div 
+                                key={d.version} 
+                                title={getRecommendation(d.version)}
+                                className="flex items-center gap-2 bg-slate-800/40 border border-slate-700/50 px-2 py-0.5 rounded-md w-fit hover:bg-slate-700/50 transition-all cursor-help"
+                              >
+                                
+                                <span className="text-[10px] font-mono text-slate-300 leading-none">
+                                  {d.version}
+                                </span>
+                                
+                                
+                                <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                  d.version.includes('1.2') || d.version.includes('1.3') 
+                                    ? 'bg-emerald-500 shadow-[0_0_4px_#10b981]' 
+                                    : 'bg-red-500 shadow-[0_0_4px_#ef4444]'
+                                }`} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </td>   
                   </tr>
                   
                   {expandedIndex === idx && !res.loading && (
@@ -183,7 +249,9 @@ function App() {
                           {res.details.map(d => (
                             <div key={d.version} className="flex flex-col items-center gap-2">
                               <span className="text-[9px] text-slate-500">{d.version}</span>
-                              <div className={`h-3 w-3 rounded-full ${
+                              <div 
+                              title={d.supported ? getRecommendation(d.version) : "No Soportado"}
+                              className={`h-3 w-3 rounded-full ${
                                 d.supported 
                                   ? (d.version.includes('1.2') || d.version.includes('1.3') ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]') 
                                   : 'bg-slate-700'
