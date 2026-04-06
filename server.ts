@@ -60,8 +60,13 @@ const server = Bun.serve({
   
       } catch (error: any) {
         console.error("Error en el endpoint:", error.message);
+
+        const msg = error.message.includes("Failed to resolve")
+        ? "El dominio no existe o esta caido"
+        : "Error interno en el escaneo";
+
         return Response.json(
-          { error: "No se pudo completar el escaneo con Nmap" }, 
+          { error: msg }, 
           { status: 500 }
         );
       }

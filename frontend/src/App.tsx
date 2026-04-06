@@ -18,6 +18,7 @@ function App() {
   const [singleUrl, setSingleUrl] = useState('');
   const [globalLoading, setGlobalLoading] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [errorUrl, setErrorUrl] = useState("");
 
   
   useEffect(() => {
@@ -45,9 +46,16 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
       });
+
+      if (!response.ok){
+        const errorData = await response.json();
+        setErrorUrl(errorData.error || "El sitio no existe.");
+        setGlobalLoading(false);
+        return;
+      }
+  
       const data = await response.json();
 
-      
       const hasConnection = data.some((d: ProtocolDetail) => d.supported);
       if (!hasConnection) {
         
@@ -75,7 +83,20 @@ function App() {
 
   const handleAddAndScan = async () => {
     const targetUrl = singleUrl.trim();
-    if(!targetUrl) return;
+
+    const regexProtocol = /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6})(\/.*)?$/i;
+
+    if(!targetUrl){
+      setErrorUrl("Por favor, ingrese una URL válida");
+      return;
+    }
+
+    if (!regexProtocol.test(targetUrl)){
+      setErrorUrl("La URL no es válida (ejemplo: https://www.google.com)");
+      return;
+    }
+
+    setErrorUrl("");
 
     if(results.some(r => r.url === targetUrl)){
       setSingleUrl('');
@@ -106,7 +127,7 @@ function App() {
             type="text"
             value={singleUrl}
             onChange={(e) => setSingleUrl(e.target.value)}
-            placeholder="Ingresar nueva URL..."
+            placeholder="Ingrese la URL a auditar"
             className="flex-1 bg-transparent px-4 outline-none"
             onKeyDown={(e) => e.key === 'Enter' && handleAddAndScan()}
           />
@@ -115,11 +136,11 @@ function App() {
             disabled={globalLoading}
             className="bg-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-purple-500 transition-colors"
           >
-            {globalLoading ? 'Buscando...' : 'Agregar'}
+            {globalLoading ? 'Buscando...' : 'Chequear'}
           </button>
         </div>
+        {errorUrl && <span style={{color:'red'}}>{errorUrl}</span>}
 
-        
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-slate-700 text-[10px] uppercase tracking-widest">
