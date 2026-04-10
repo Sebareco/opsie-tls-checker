@@ -1,6 +1,6 @@
+
+=🛡️ OPSIE-TLS-CHECKER - DOCUMENTACIÓN TÉCNICA =
 =
-🛡️ OPSIE-TLS-CHECKER - DOCUMENTACIÓN TÉCNICA
-==
 DESCRIPCIÓN:
 Herramienta de auditoría de seguridad web para monitoreo de 
 protocolos TLS en tiempo real. Utiliza Nmap para escaneo 
