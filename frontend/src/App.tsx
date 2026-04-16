@@ -225,6 +225,8 @@ function App() {
           urls: proj.urls.filter(u => u.id !== urlId)
         };
       });
+
+      localStorage.setItem('v4', JSON.stringify(nuevosProyectos));
   
       return nuevosProyectos;
     });
