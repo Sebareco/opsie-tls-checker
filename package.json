@@ -4,15 +4,17 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1"
   },
   "scripts": {
-  "install:all": "bun install && cd frontend && bun install",
-  "dev:server": "bun --watch server.ts",
-  "dev:ui": "cd frontend && bun dev",
-  "build:ui": "cd frontend && bun run build",
-  "start": "bun server.ts"
-},
+    "install:all": "bun install && cd frontend && bun install",
+    "dev:server": "bun --watch server.ts",
+    "dev:ui": "cd frontend && bun dev",
+    "build:ui": "cd frontend && bun run build",
+    "start": "bun server.ts",
+    "all": "concurrently \"bun --watch server.ts\" \"cd frontend && bun dev\""
+  },
   "peerDependencies": {
     "typescript": "^5"
   }
