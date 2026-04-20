@@ -3,7 +3,7 @@ import { Socket } from "node:dgram";
 import { resourceUsage } from "node:process";
 import { escape } from "node:querystring";
 import tls from "node:tls";
-import { OuterExpressionKinds } from "typescript";
+import { createBuilderStatusReporter, OuterExpressionKinds } from "typescript";
 
 
 async function auditVersionTLS(host: string): Promise<{version: string, supported: boolean}[]> {
@@ -39,7 +39,9 @@ const server = Bun.serve({
         return Response.json(resultados);
       } catch (error: any) {
         const status = error.code === 'ETIMEDOUT' ? 504 : 500;
-        return Response.json({ error: "Error en el escaneo de red" }, { status });
+        const message = error.message ? `Error en el escaneo de red: ${error.message}` : "Error en el escaneo de red";
+
+        return Response.json({ error: message }, { status });
       }
     }
 

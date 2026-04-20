@@ -268,8 +268,8 @@ function App() {
               <tr>
                 <th className="p-4">URL</th>
                 <th className="p-4 text-center">ESTADO</th>
-                <th className="p-4 text-center">ACCIONES</th>
-                <th className="p-4 text-right">DETALLES</th>
+                <th className="p-4 text-center">DETALLES</th>
+                <th className="p-4 text-right">ACCIONES</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700 text-sm">
@@ -301,9 +301,29 @@ function App() {
                       )}
                     </td>
 
+                    {/* COLUMNA DETALLES */}
+                    <td className="p-4 cursor-pointer" onClick={() => setExpandedIndex(expandedIndex === res.id ? null : res.id)}>
+                      <div className="flex items-center justify-center flex-col gap-2">
+                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+                          {expandedIndex === res.id ? 'Cerrar ▲' : 'Ver más ▼'}
+                        </span>
+                        {!res.loading && !res.error && (
+                          <div className="flex gap-1">
+                            {res.details.filter(d => d.supported).slice(0, 3).map(d => (
+                              <div key={d.version} className="bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
+                                <div className={`w-1 h-1 rounded-full ${/1\.(2|3)/.test(d.version) ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                <span className="text-[8px] font-mono text-slate-400">{d.version.replace('TLSv', '')}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+
+
                     {/* COLUMNA ACCIONES - AQUÍ ESTÁ EL CAMBIO CLAVE */}
                     <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex flex-col items-end gap-1.5">
                         <button 
                           onClick={(e) => { e.stopPropagation(); fetchScan(selectedProjectId!, res.id, res.url); }}
                           className="p-2 bg-slate-800 hover:bg-purple-500/20 text-purple-400 rounded-md border border-slate-700 transition-all text-[10px] font-bold uppercase tracking-tighter"
@@ -318,25 +338,6 @@ function App() {
                         >
                           🗑️ Borrar
                         </button>
-                      </div>
-                    </td>
-
-                    {/* COLUMNA DETALLES */}
-                    <td className="p-4 cursor-pointer" onClick={() => setExpandedIndex(expandedIndex === res.id ? null : res.id)}>
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
-                          {expandedIndex === res.id ? 'Cerrar ▲' : 'Ver más ▼'}
-                        </span>
-                        {!res.loading && !res.error && (
-                          <div className="flex gap-1">
-                            {res.details.filter(d => d.supported).slice(0, 3).map(d => (
-                              <div key={d.version} className="bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
-                                <div className={`w-1 h-1 rounded-full ${/1\.(2|3)/.test(d.version) ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                <span className="text-[8px] font-mono text-slate-400">{d.version.replace('TLSv', '')}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </td>   
                   </tr>
