@@ -1,19 +1,19 @@
-import React, {useEffect, useState } from 'react'; // Limpiamos importaciones
+import React, {useEffect, useState } from 'react';
 
 type ProtocolDetail = { 
   version: string; 
   supported: boolean; 
 };
 
-// Esta es nueva: Representa un escaneo pasado
+
 type HistoryEvent = {
   date: string;
   results: ProtocolDetail[];
 };
 
-// Esta cambia para incluir el historial
+
 type TLSResult = { 
-  id: string; // Agregamos ID para el delete
+  id: string; 
   url: string; 
   details: ProtocolDetail[];
   history: HistoryEvent[];
@@ -22,7 +22,7 @@ type TLSResult = {
   scannedAt?: string | null;
 };
 
-// Esta es la que agrupa todo
+
 type Project = {
   id: string;
   name: string;
@@ -34,7 +34,7 @@ function App() {
     {
       id: '1',
       name: 'Tester',
-      urls: [] // Acá se van a ir guardando tus scans
+      urls: [] 
     }
   ]);
   
@@ -52,7 +52,7 @@ function App() {
   const [errorUrl, setErrorUrl] = useState<string | null>("");
 
   useEffect(() => {
-    // Cambiamos el nombre de la key a v4 o 'opsie_projects' para evitar conflictos con datos viejos
+    
     const dataRaw = localStorage.getItem('v4'); 
     
     if (dataRaw) {
@@ -60,22 +60,22 @@ function App() {
         const listaProyectos = JSON.parse(dataRaw);
         
         if (Array.isArray(listaProyectos)) {
-          // "Hidratamos" los datos para asegurar que al cargar no queden en estado 'loading'
+          
           const hidratados = listaProyectos?.map((proyecto: Project) => ({
             ...proyecto,
             urls: proyecto.urls.map((u: TLSResult) => ({
               ...u,
-              loading: false, // Reset por si se cerró la app escaneando
+              loading: false, 
               error: u.error || null,
-              history: u.history || [] // Nos aseguramos de que siempre exista el array de historial
+              history: u.history || [] 
             }))
           }));
           
-          setProjects(hidratados); // Usamos setProjects en lugar de setResults
+          setProjects(hidratados); 
         }
       } catch (e) {
         console.error("Error al hidratar storage de proyectos:", e);
-        // Si los datos están corruptos, mejor limpiar ese registro específico
+        
         localStorage.removeItem('v4'); 
       }
     }
@@ -84,7 +84,7 @@ function App() {
   const fetchScan = async (projectId: string, urlId: string, urlToScan: string) => {
     setGlobalLoading(true);
     setErrorUrl(null);
-    // 1. Seteamos Loading en la URL específica dentro del proyecto
+    
     setProjects(prev => prev.map(p => p.id === projectId ? {
       ...p,
       urls: p.urls.map(u => u.id === urlId ? { ...u, loading: true, error: null } : u)
@@ -99,7 +99,7 @@ function App() {
         body: JSON.stringify({ url: urlToScan }),
       });
   
-      // 2. Manejo de error de respuesta (el if que te gustaba)
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({})); 
         const msg = errorData.error || "El servidor tuvo un problema.";
@@ -109,11 +109,11 @@ function App() {
         return;
       }
   
-      // 3. Leemos el JSON UNA SOLA VEZ
+      
       const data: ProtocolDetail[] = await response.json();
       const dateLocal = new Date().toLocaleString();
   
-      // 4. Verificamos si hubo conexión
+      
       const hasConnection = data.some((d) => d.supported);
       if (!hasConnection) {
         setErrorUrl("El host no respondió a ninguna prueba TLS.");
@@ -121,7 +121,7 @@ function App() {
         return;
       }
   
-      // 5. TODO OK: Actualizamos con Historial
+     
       setProjects(prev => prev.map(p => {
         if (p.id !== projectId) return p;
         return {
@@ -151,7 +151,7 @@ function App() {
     }
   };
   
-  // Función auxiliar para no repetir código de error (opcional pero recomendada)
+  
   const actualizarEstadoUrl = (pId: string, uId: string, cambios: any) => {
     setProjects(prev => prev.map(p => p.id === pId ? {
       ...p,
@@ -163,7 +163,7 @@ function App() {
     
     const targetUrl = singleUrl.trim();
     
-    // Validaciones
+   
     if (!targetUrl) return setErrorUrl("URL vacía");
     
     
@@ -183,7 +183,7 @@ function App() {
         }
     }
 
-    const urlId = crypto.randomUUID(); // Usá este para que no choque el ID '1'
+    const urlId = crypto.randomUUID(); 
 
     const nuevoResultado = {
         id: urlId,
@@ -195,7 +195,7 @@ function App() {
         error: null
     };
 
-    // Actualizamos el estado
+    
     setProjects(prev => {
         const nuevaLista = prev.map(p => {
             if (p.id !== selectedProjectId) return p;
@@ -207,19 +207,19 @@ function App() {
 
     setSingleUrl('');
     
-    // EJECUTAR EL FETCH (Asegurate de que el nombre sea exacto)
+    
     await fetchScan(selectedProjectId, urlId, targetUrl); 
 };
 
   const handleDelete = (projectId: string, urlId: string) => {
-    // Confirmación simple para evitar accidentes
+    
     if (!window.confirm("¿Estás seguro de que querés eliminar esta URL y su historial?")) return;
   
     setProjects(prevProjects => {
       const nuevosProyectos = prevProjects.map(proj => {
-        if (proj.id !== projectId) return proj; // Si no es el proyecto, lo dejamos igual
+        if (proj.id !== projectId) return proj; 
   
-        // Si es el proyecto, filtramos las URLs para sacar la que coincida con el ID
+        
         return {
           ...proj,
           urls: proj.urls.filter(u => u.id !== urlId)
@@ -233,7 +233,7 @@ function App() {
   };
 
 
-  // buscamos que tenemos q mostrar
+  
   const activeProject = projects.find(p => p.id === selectedProjectId);
   const urlsToShow = activeProject ? activeProject.urls : [];
 

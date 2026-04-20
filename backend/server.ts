@@ -19,7 +19,7 @@ async function auditVersionTLS(host: string): Promise<{version: string, supporte
     }));
   } catch (error: any) {
     console.error(`Error Nmap en ${host}:`, error.message);
-    // Lanzamos el error para que el endpoint lo capture
+    
     throw error; 
   }
 }
