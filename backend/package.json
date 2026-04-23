@@ -13,7 +13,7 @@
     "dev:ui": "cd frontend && bun dev",
     "build:ui": "cd frontend && bun run build",
     "start": "bun server.ts",
-    "all": "concurrently \"bun --watch server.ts\" \"cd frontend && bun dev\""
+    "all": "concurrently \"bun --watch server.ts\" \"cd .. && cd frontend && bun dev\""
   },
   "peerDependencies": {
     "typescript": "^5"
