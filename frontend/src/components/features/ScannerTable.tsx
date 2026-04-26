@@ -12,8 +12,8 @@ interface Props {
   selectedProjectId: string | null;
 
   setSingleUrl: (val: string) => void;
-  handleAddAndScan: () => void;
-  fetchScan: (projId: string, resId: string, url: string) => void;
+  handleAddAndScan: () => Promise<void>;
+  fetchScan: (projId: string, resId: string, url: string) => Promise<void>;
   handleDelete: (projId: string, resId: string) => void;
 }
 
