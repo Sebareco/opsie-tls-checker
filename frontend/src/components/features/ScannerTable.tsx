@@ -150,7 +150,7 @@ export const ScannerTable = ({
                         </div>
                         
 
-                        <div className="divide-y divide-slate-800">
+                        <div className="divide-y divide-slate-800 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                             {res.history.map((h, i) => (
                             <div key={i} className="grid grid-cols-5 gap-4 px-4 py-3 items-center hover:bg-slate-800/50">
                                 <div className="flex flex-col">
