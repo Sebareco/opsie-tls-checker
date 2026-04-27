@@ -8,8 +8,16 @@ type UseScanUrlParams = {
 };
 
 export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseScanUrlParams) => {
+  const updateProjects = (updater: (prev: Project[]) => Project[]) => {
+    setProjects(prev => {
+      const next = updater(prev);
+      localStorage.setItem('v4', JSON.stringify(next));
+      return next;
+    });
+  };
+
   const actualizarEstadoUrl = (pId: string, uId: string, cambios: Partial<Project['urls'][number]>) => {
-    setProjects(prev => prev.map(p => p.id === pId ? {
+    updateProjects(prev => prev.map(p => p.id === pId ? {
       ...p,
       urls: p.urls.map(u => u.id === uId ? { ...u, ...cambios } : u)
     } : p));
@@ -19,7 +27,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
     setGlobalLoading(true);
     setErrorUrl(null);
 
-    setProjects(prev => prev.map(p => p.id === projectId ? {
+    updateProjects(prev => prev.map(p => p.id === projectId ? {
       ...p,
       urls: p.urls.map(u => u.id === urlId ? { ...u, loading: true, error: null } : u)
     } : p));
@@ -50,7 +58,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
         return;
       }
 
-      setProjects(prev => prev.map(p => {
+      updateProjects(prev => prev.map(p => {
         if (p.id !== projectId) return p;
         return {
           ...p,
