@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { Project } from '../../types/tls';
+import { normalizeUrl } from '../../utils/urlNormalizer';
 
 type UseAddAndScanUrlParams = {
   projects: Project[];
@@ -20,13 +21,12 @@ export const useAddAndScanUrl = ({
   setErrorUrl,
   fetchScan
 }: UseAddAndScanUrlParams) => {
-  const handleAddAndScan = async () => {
-    const targetUrl = singleUrl.trim();
+    const handleAddAndScan = async () => {
+    const targetUrl = normalizeUrl(singleUrl).value;
     if (!targetUrl) {
-      setErrorUrl('URL vacia');
+      setErrorUrl(normalizeUrl(singleUrl).error);
       return;
     }
-
     if (!selectedProjectId) return;
 
     const currentProject = projects.find(p => p.id === selectedProjectId);
