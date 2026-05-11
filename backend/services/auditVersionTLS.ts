@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { error } from '../utils/logger';
 
 export type AuditResult = {
   version: string;
@@ -15,8 +16,8 @@ export async function auditVersionTLS(host: string): Promise<AuditResult[]> {
       version: v,
       supported: output.includes(v)
     }));
-  } catch (error: any) {
-    console.error(`Error Nmap en ${host}:`, error.message);
-    throw error;
+  } catch (err: any) {
+    error(`Error Nmap en ${host}:`, err.message);
+    throw err;
   }
 }

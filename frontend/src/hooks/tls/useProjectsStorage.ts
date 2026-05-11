@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Project, TLSResult } from '../../types/tls';
+import { error } from '../../utils/logger';
 
 const INITIAL_PROJECTS: Project[] = [
   {
@@ -28,7 +29,7 @@ export const useProjectsStorage = () => {
         }))
       }));
     } catch (e) {
-      console.error('Error al hidratar storage de proyectos:', e);
+      error('Error al hidratar storage de proyectos:', e);
       return INITIAL_PROJECTS;
     }
   });
