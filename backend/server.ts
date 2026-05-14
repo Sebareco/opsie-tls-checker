@@ -1,4 +1,5 @@
 import { auditVersionTLS } from './services/auditVersionTLS';
+import { info } from './utils/logger';
 
 
 const server = Bun.serve({
@@ -39,4 +40,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`🚀 Servidor listo en http://localhost:3000`);
+info('🚀 Servidor listo en http://localhost:3000');

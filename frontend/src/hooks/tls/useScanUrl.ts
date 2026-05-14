@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { Project, ProtocolDetail } from '../../types/tls';
+import { error } from '../../utils/logger';
 
 type UseScanUrlParams = {
   setProjects: Dispatch<SetStateAction<Project[]>>;
@@ -79,7 +80,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
       }));
 
     } catch (err) {
-      console.error('CRITICO', err);
+      error('CRITICO', err);
       setErrorUrl('❌ No se puede conectar con el Backend.');
       actualizarEstadoUrl(projectId, urlId, { loading: false, error: 'Servidor Offline' });
     } finally {
