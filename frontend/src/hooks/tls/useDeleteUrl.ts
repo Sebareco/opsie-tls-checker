@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { PROJECTS_STORAGE_KEY } from '../../constants/storage';
 import type { Project } from '../../types/tls';
 
 export const useDeleteUrl = (setProjects: Dispatch<SetStateAction<Project[]>>) => {
@@ -12,7 +13,7 @@ export const useDeleteUrl = (setProjects: Dispatch<SetStateAction<Project[]>>) =
         };
       });
 
-      localStorage.setItem('v4', JSON.stringify(nuevosProyectos));
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(nuevosProyectos));
       return nuevosProyectos;
     });
   };
