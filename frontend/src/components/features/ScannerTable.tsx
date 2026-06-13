@@ -136,46 +136,68 @@ export const ScannerTable = ({
                     </td>
                 </tr>
 
-                {/* DESPLEGABLE (Igual que antes, pero con colSpan=4 para cubrir la nueva columna) */}
-                {expandedIndex === res.id && !res.loading && (
-                    <tr className="bg-slate-900/30 shadow-inner">
-                    <td colSpan={4} className="p-6">
-                        <div className="bg-slate-800/60 p-6 rounded-xl border border-slate-700">
-                        <div className="grid grid-cols-5 gap-4 px-4 py-2 bg-slate-900/50 rounded-t-lg border-b border-slate-700">
-                            <div className="text-[10px] uppercase font-bold text-slate-500">Fecha</div>
-                            <div className="text-[10px] uppercase font-bold text-slate-500 text-center">1.0</div>
-                            <div className="text-[10px] uppercase font-bold text-slate-500 text-center">1.1</div>
-                            <div className="text-[10px] uppercase font-bold text-slate-500 text-center">1.2</div>
-                            <div className="text-[10px] uppercase font-bold text-slate-500 text-center">1.3</div>
-                        </div>
-                        
+                {/* DESPLEGABLE CON ESTRUCTURA DE TABLA NATIVA */}
+{expandedIndex === res.id && !res.loading && (
+    <tr className="bg-slate-900/30 shadow-inner">
+        <td colSpan={4} className="p-6">
+            <div className="bg-slate-800/60 p-6 rounded-xl border border-slate-700 overflow-hidden">
+                
+                <table className="w-full table-fixed border-collapse">
+                    
+                    {/* Definición estricta de anchos de columna (20% cada una) */}
+                    <colgroup>
+                        <col className="w-[20%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[20%]" />
+                    </colgroup>
 
-                        <div className="divide-y divide-slate-800 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                            {res.history.map((h, i) => (
-                            <div key={i} className="grid grid-cols-5 gap-4 px-4 py-3 items-center hover:bg-slate-800/50">
-                                <div className="flex flex-col">
-                                <span className="text-[9px] text-slate-500">
-                                    {formatDate(h.date)}
-                                </span>
-                                <span className="text-[10px] text-slate-300 font-mono italic">
-                                    {formatTime(h.date)}
-                                </span>
-                                </div>
+                    {/* Cabecera Estática */}
+                    <thead>
+                        <tr className="bg-slate-900/50 border-b border-slate-700">
+                            <th className="px-4 py-2 text-left text-[10px] uppercase font-bold text-slate-500">Fecha</th>
+                            <th className="px-4 py-2 text-center text-[10px] uppercase font-bold text-slate-500">1.0</th>
+                            <th className="px-4 py-2 text-center text-[10px] uppercase font-bold text-slate-500">1.1</th>
+                            <th className="px-4 py-2 text-center text-[10px] uppercase font-bold text-slate-500">1.2</th>
+                            <th className="px-4 py-2 text-center text-[10px] uppercase font-bold text-slate-500">1.3</th>
+                        </tr>
+                    </thead>
 
+                    {/* Cuerpo de Datos con scroll emulado */}
+                    <tbody>
+                        {res.history.map((h, i) => (
+                            <tr key={i} className="border-b border-slate-800/60 hover:bg-slate-800/50 transition-colors">
+                                
+                                {/* Celda de Fecha */}
+                                <td className="px-4 py-3 text-left align-middle">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] text-slate-500">{formatDate(h.date)}</span>
+                                        <span className="text-[10px] text-slate-300 font-mono italic">{formatTime(h.date)}</span>
+                                    </div>
+                                </td>
+
+                                {/* Celdas de Estado Centradas por Atributo de Tabla */}
                                 {h.results
-                                .filter(r => !r.version.toLocaleLowerCase().includes('ssl'))
-                                .map((r) => (
-                                <div key={r.version} className="flex justify-center">
-                                    <StatusBadge detail={r} hideText={true} size='md'/>
-                                </div>
-                                ))}
-                            </div>
-                            ))}
-                        </div>
-                        </div>
-                    </td>
-                    </tr>
-                )}
+                                    .filter(r => !r.version.toLocaleLowerCase().includes('ssl'))
+                                    .map((r) => (
+                                        <td key={r.version} className="px-4 py-3 text-center align-middle">
+                                            <div className="inline-block mx-auto">
+                                                <StatusBadge detail={r} hideText={true} size='md'/>
+                                            </div>
+                                        </td>
+                                    ))
+                                }
+                            </tr>
+                        ))}
+                    </tbody>
+
+                </table>
+
+            </div>
+        </td>
+    </tr>
+)}
                 </React.Fragment>
             ))}
             </tbody>

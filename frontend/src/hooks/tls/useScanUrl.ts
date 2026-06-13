@@ -17,11 +17,23 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
     });
   };
 
-  const actualizarEstadoUrl = (pId: string, uId: string, cambios: Partial<Project['urls'][number]>) => {
-    updateProjects(prev => prev.map(p => p.id === pId ? {
-      ...p,
-      urls: p.urls.map(u => u.id === uId ? { ...u, ...cambios } : u)
-    } : p));
+  const esPrimerEscaneoFallido = (url: Project['urls'][number]) =>
+    !url.scannedAt && (!url.history || url.history.length === 0);
+
+  const manejarFalloScan = (pId: string, uId: string, msg: string) => {
+    updateProjects(prev => prev.map(p => {
+      if (p.id !== pId) return p;
+
+      const url = p.urls.find(u => u.id === uId);
+      if (url && esPrimerEscaneoFallido(url)) {
+        return { ...p, urls: p.urls.filter(u => u.id !== uId) };
+      }
+
+      return {
+        ...p,
+        urls: p.urls.map(u => u.id === uId ? { ...u, loading: false, error: msg } : u)
+      };
+    }));
   };
 
   const fetchScan = async (projectId: string, urlId: string, urlToScan: string) => {
@@ -45,7 +57,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
         const msg = errorData.error || 'El servidor tuvo un problema.';
         setErrorUrl(`⚠️ Error: ${msg}`);
 
-        actualizarEstadoUrl(projectId, urlId, { loading: false, error: msg });
+        manejarFalloScan(projectId, urlId, msg);
         return;
       }
 
@@ -55,7 +67,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
       const hasConnection = data.some((d) => d.supported);
       if (!hasConnection) {
         setErrorUrl('El host no respondió a ninguna prueba TLS.');
-        actualizarEstadoUrl(projectId, urlId, { loading: false, error: 'Sin respuesta TLS' });
+        manejarFalloScan(projectId, urlId, 'Sin respuesta TLS');
         return;
       }
 
@@ -82,7 +94,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
     } catch (err) {
       error('CRITICO', err);
       setErrorUrl('❌ No se puede conectar con el Backend.');
-      actualizarEstadoUrl(projectId, urlId, { loading: false, error: 'Servidor Offline' });
+      manejarFalloScan(projectId, urlId, 'Servidor Offline');
     } finally {
       setGlobalLoading(false);
     }
