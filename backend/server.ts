@@ -40,4 +40,4 @@ const server = Bun.serve({
   },
 });
 
-info('🚀 Servidor listo en http://localhost:3000');
+info('Servidor listo en http://localhost:3000');
