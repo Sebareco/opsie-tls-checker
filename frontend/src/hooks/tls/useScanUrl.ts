@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { PROJECTS_STORAGE_KEY } from '../../constants/storage';
 import type { Project, ProtocolDetail } from '../../types/tls';
 import { error } from '../../utils/logger';
 
@@ -12,7 +13,7 @@ export const useScanUrl = ({ setProjects, setGlobalLoading, setErrorUrl }: UseSc
   const updateProjects = (updater: (prev: Project[]) => Project[]) => {
     setProjects(prev => {
       const next = updater(prev);
-      localStorage.setItem('v4', JSON.stringify(next));
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(next));
       return next;
     });
   };

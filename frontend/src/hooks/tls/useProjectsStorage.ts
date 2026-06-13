@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PROJECTS_STORAGE_KEY } from '../../constants/storage';
 import type { Project, TLSResult } from '../../types/tls';
 import { error } from '../../utils/logger';
 
@@ -12,7 +13,7 @@ const INITIAL_PROJECTS: Project[] = [
 
 export const useProjectsStorage = () => {
   const [projects, setProjects] = useState<Project[]>(() => {
-    const dataRaw = localStorage.getItem('v4');
+    const dataRaw = localStorage.getItem(PROJECTS_STORAGE_KEY);
     if (!dataRaw) return INITIAL_PROJECTS;
 
     try {

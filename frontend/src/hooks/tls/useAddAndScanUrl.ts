@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
+import { PROJECTS_STORAGE_KEY } from '../../constants/storage';
 import type { Project } from '../../types/tls';
 import { normalizeUrl } from '../../utils/urlNormalizer';
 
@@ -55,7 +56,7 @@ export const useAddAndScanUrl = ({
         if (p.id !== selectedProjectId) return p;
         return { ...p, urls: [nuevoResultado, ...p.urls] };
       });
-      localStorage.setItem('v4', JSON.stringify(nuevaLista));
+      localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(nuevaLista));
       return nuevaLista;
     });
 
