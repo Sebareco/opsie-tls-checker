@@ -29,14 +29,14 @@ const server = Bun.serve({
       }
     }
 
-    const filePath = './frontend/dist' + (url.pathname === '/' ? '/index.html' : url.pathname);
+    const filePath = '../frontend/dist' + (url.pathname === '/' ? '/index.html' : url.pathname);
     const file = Bun.file(filePath);
 
     if (await file.exists()) {
       return new Response(file);
     }
 
-    return new Response(Bun.file('./frontend/dist/index.html'));
+    return new Response(Bun.file('../frontend/dist/index.html'));
   },
 });
 

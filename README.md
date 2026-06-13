@@ -1,46 +1,61 @@
+# OPSIE TLS Checker
 
-=🛡️ OPSIE-TLS-CHECKER - DOCUMENTACIÓN TÉCNICA =
-=
-DESCRIPCIÓN:
-Herramienta de auditoría de seguridad web para monitoreo de 
-protocolos TLS en tiempo real. Utiliza Nmap para escaneo 
-profundo y React para la visualización.
+Herramienta de auditoría de seguridad web para monitorear protocolos TLS. Usa Nmap (`ssl-enum-ciphers`) en el backend y React + Vite en el frontend.
 
-TECNOLOGÍAS:
-- Frontend: React 18 + TypeScript + Tailwind CSS
-- Runtime: Bun (Backend de alta performance)
-- Seguridad: Nmap (Script ssl-enum-ciphers)
-- Persistencia: LocalStorage V3 (Basado en objetos)
+## Requisitos
 
-------------------------------------------------------------
-✨ CARACTERÍSTICAS PRINCIPALES
-------------------------------------------------------------
-- Escaneo Multiversión: Detecta SSLv3, TLS 1.0, 1.1, 1.2 y 1.3.
-- Indicadores LED: Visualización Emerald (Seguro) / Red (Vulnerable).
-- Historial Local: Persistencia de auditorías con fecha y hora.
-- Alertas de Vulnerabilidad: Identifica protocolos obsoletos.
+- [Bun](https://bun.sh)
+- [Nmap](https://nmap.org/download.html) en el `PATH` del sistema
 
-------------------------------------------------------------
-🛠️ INSTALACIÓN Y EJECUCIÓN
-------------------------------------------------------------
-## 🛠️ Instalación y Configuración
+## Instalación
 
-### 1. Requisitos Previos
-* Tener instalado [Bun](https://bun.sh).
-* Tener instalado [Nmap](https://nmap.org/download.html) (Asegurarse de tener `nmap` en el PATH del sistema).
+```bash
+git clone https://github.com/tu-usuario/opsie-tls-checker.git
+cd opsie-tls-checker
+bun install
+```
 
-1. Clonar repo:
-   git clone https://github.com/tu-usuario/opsie-tls-checker.git
+`bun install` en la raíz instala las dependencias de `backend` y `frontend` (workspaces).
 
-2. Instalar dependencias:
-   bun install
+## Desarrollo
 
-3. Correr proyecto:
-   bun run dev
+Desde la raíz del repositorio:
 
-------------------------------------------------------------
-📋 ESTRUCTURA DE DATOS (JSON V3)
-------------------------------------------------------------
+```bash
+bun run dev
+```
+
+- **UI (Vite):** http://localhost:5173 — las peticiones `/api` se proxyan al backend.
+- **API (Bun):** http://localhost:3000
+
+Scripts por paquete (solo si trabajás en una parte):
+
+```bash
+bun run --cwd backend dev
+bun run --cwd frontend dev
+```
+
+## Producción
+
+```bash
+bun run build
+bun run start
+```
+
+La app queda servida en http://localhost:3000 (API + estáticos de `frontend/dist`).
+
+## Estructura del proyecto
+
+```
+opsie-tls-checker/
+├── package.json      # orquestación (dev, build, start)
+├── backend/          # API Bun + Nmap
+└── frontend/         # React + Vite + Tailwind
+```
+
+## Formato de auditoría (JSON)
+
+```json
 {
   "url": "host.com",
   "details": [
@@ -51,18 +66,15 @@ TECNOLOGÍAS:
   "loading": false,
   "error": null
 }
+```
 
-------------------------------------------------------------
-⚠️ SOLUCIÓN DE PROBLEMAS (TIMEOUTS EN WINDOWS)
-------------------------------------------------------------
-Si recibís error ETIMEDOUT:
-- El sistema usa el flag '-n' en Nmap para evitar DNS lento.
-- Se recomienda subir el timeout a 60000ms en server.ts.
-- Correr en terminal con permisos de Administrador.
+## Solución de problemas (Windows)
 
-------------------------------------------------------------
-👤 AUTOR: Sebastian Areco
- Ingeniería en Informática - Misiones, Argentina.
-------------------------------------------------------------
-Desarrollado en Abril de 2026.
-============================================================
+Si aparece `ETIMEDOUT`:
+
+- Nmap usa el flag `-n` para evitar resolución DNS lenta.
+- Ejecutá la terminal con permisos de administrador si el escaneo lo requiere.
+
+## Autor
+
+Sebastian Areco — Ingeniería en Informática, Misiones, Argentina.
